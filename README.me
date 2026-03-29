@@ -1,0 +1,107 @@
+# CodeWash — Eliott RPG (projet `project/`)
+
+Application **React 19** + **Vite** (build web) avec option **Electron** (cible Windows portable documentée dans `package.json`). Projet du module **G-ING-400 CodeWash** : maintenance, refactor et missions du sujet.
+
+Toutes les commandes ci-dessous s’exécutent depuis ce dossier **`project/`**.
+
+---
+
+## Lancer le projet
+
+### Prérequis
+
+- **Node.js** (LTS recommandé), **npm**.
+- Sous **Windows** : même procédure ; le sujet demande de documenter les éventuels soucis de chemins, d’antivirus ou de version Node pour les binômes suivants.
+
+### Installation
+
+```bash
+npm install
+```
+
+### Mode développement (navigateur, Vite)
+
+```bash
+npm run dev
+```
+
+Ouvrir l’URL affichée dans le terminal (souvent `http://localhost:5173`).
+
+### Build web
+
+```bash
+npm run build
+npm run preview
+```
+
+### Electron (après build)
+
+```bash
+npm run electron:dev
+```
+
+Packaging Windows (artefacts dans `release/`) :
+
+```bash
+npm run electron:build
+```
+
+### Qualité
+
+```bash
+npm run lint
+```
+
+Les tests **Vitest** sont prévus par la stack (`vitest`, `@vitest/coverage-v8`) ; les ajouter au fil des features est aligné avec le sujet (caractérisation / non-régression).
+
+---
+
+## Performances — comment on compte les traiter (sujet CodeWash)
+
+Le sujet demande un menu plus réactif, un **démarrage perçu comme instantané**, un **écran de chargement avec pourcentage**, des animations qui restent mais plus « snappy », et une **mesure** des gains.
+
+### Périmètre technique dans ce repo
+
+- **Premier rendu** : état de chargement initial (splash) calé sur des étapes réelles — par exemple : lecture `localStorage` / profils (`profileStorage`), hydratation des skills, préchargement minimal des assets critiques — avec une **progression 0–100 %** dérivée de ces étapes (pas un simple `setTimeout`).
+- **Menu principal** : réduire les re-renders inutiles (découpage déjà amorcé avec `AppChrome`, `AppDrawers`, etc.) ; utiliser **`useCallback` / `memo`** là où les props changent souvent ; éviter de recalculer des objets lourds à chaque frame.
+- **Code splitting** : `React.lazy` + `Suspense` pour des blocs optionnels (gros drawers, modales rares) afin d’alléger le bundle initial.
+- **Médias** : images du dossier `public/` avec tailles cohérentes, `loading="lazy"` hors above-the-fold ; éviter de jouer tous les sons au montage — le `soundManager` charge déjà de façon ciblée, à garder strict.
+- **Persistance** : le `useEffect` de sauvegarde agrège déjà skills / thème / stats ; veiller à ne pas augmenter la fréquence d’écriture sans raison.
+
+### Mesure (preuve pour la soutenance)
+
+- **Lighthouse** (Performance) sur le build `preview` et, si pertinent, **Web Vitals** (LCP, INP, CLS).
+- Scénarios avant / après : temps jusqu’au menu utilisable, fluidité du carrousel de compétences, latence à l’ouverture du tiroir cosmétiques.
+
+---
+
+## Traduction (i18n) — comment on compte la faire (sujet CodeWash)
+
+Le sujet impose un **changement de langue** depuis le menu, une **deuxième langue** au choix, et **aucune chaîne critique en dur** : les textes suivants doivent être externalisés.
+
+### Architecture prévue
+
+- Répertoire du type `src/locales/` avec **`fr.json`** et **`en.json`** (ou autre langue cible), clés hiérarchisées (`menu.play`, `drawer.themes`, `achievements.xxx`, etc.).
+- Une fonction **`t(key)`** (ou hook **`useTranslation()`**) qui lit la langue courante et retourne la chaîne, avec repli sur la langue par défaut si une clé manque.
+- **État langue** : `useState` local remonté dans `App.jsx` ou petit module / contexte, **persisté dans `localStorage`** (clé du type `codewash-locale`) pour survivre aux rechargements.
+- **UI** : bouton ou liste de langues dans le **menu principal** (chrome), comme demandé dans le sujet.
+
+### Fichiers à migrer progressivement
+
+- Textes dans **`App.jsx`**, **`AppChrome`**, drawers, modales (`BugReportModal`, etc.), libellés d’**achievements** et chaînes utilisateur dans **`gameData.jsx`** / constantes — en gardant les **noms techniques** (ids de skills, clés de thème) inchangés.
+
+### Cas particulier
+
+- Contenu purement **cosmétique** déjà porté par les thèmes (`THEME_CONFIG`) peut rester dans la config thème tant que l’UI « cadre » (boutons, erreurs, tutoriels) passe par l’i18n ; toute décision de ne pas traduire un bloc doit être **justifiée** en soutenance.
+
+---
+
+## Documentation complémentaire
+
+Des notes de refactor et de méthode se trouvent dans **`docs/`** (certaines peuvent être ignorées par Git selon `.gitignore` du dépôt — à vérifier avant rendu).
+
+---
+
+## Rappel « Scout rule » (sujet)
+
+Chaque évolution : petits commits réversibles, comportement préservé ou couvert par des tests, choix documentés (README, commentaires ciblés, ADR si besoin).
