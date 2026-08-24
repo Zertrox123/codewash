@@ -1,17 +1,12 @@
 # CodeWash
 
-Outil d'analyse statique de code source, conformité et refactoring automatisé.
+Outil d'analyse statique et de refactoring de code source.
 
-## Présentation
+Parse les fichiers pour repérer les mauvaises pratiques, vérifier le respect des normes et proposer des améliorations.
 
-CodeWash (G-ING-400) analyse l'arbre syntaxique abstrait (AST) de fichiers sources pour valider le respect des normes de développement, repérer les anomalies et proposer des optimisations structurelles.
-
-## Installation et Lancement
+## Lancement
 
 ```bash
-# Installer les dépendances
 npm install
-
-# Lancer l'analyseur
 npm start
 ```
